@@ -5,6 +5,7 @@
         <script>
             DM.init({
                 apiKey: '408218a64170fbdf1498',
+                // apiKey: '4fc5ab5c3010407f51cd',
                 status: true, // check login status
                 cookie: true // enable cookies to allow the server to access the session
             });
@@ -60,6 +61,12 @@
                 autoplay: false,
                 mute: true
                 }
+            });
+            player.addEventListener('video_start', function(event) {
+                console.log("video_start", event);
+                DM.getLoginStatus(function(user) {
+                    if (user.session) console.log('video start for', user.session.uid);
+                });
             });
         </script>
     </body>
