@@ -12,15 +12,22 @@
     <body>
         <button id='login'>Login</button>
         <script>
-            document.getElementById('login').onclick = function() {
-                DM.login(function(response) {
-                    if (response.session) {
-                        console.log("loged in", response.session);
-                    } else {
-                        console.log("not logged in");
-                    }
-                });
-            };
+            DM.getLoginStatus(function(response) {
+                if (response.session) {
+                    console.log('already logged in', response.session);
+                    document.getElementById('login').remove();
+                } else {
+                    document.getElementById('login').onclick = function() {
+                        DM.login(function(response) {
+                            if (response.session) {
+                                console.log("logged in user", response.session);
+                            } else {
+                                console.log("login cancelled");
+                            }
+                        });
+                    };
+                }
+            });
         </script>
         
         <script>
