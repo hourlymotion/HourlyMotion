@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <script src="https://api.dmcdn.net/all.js"></script>
+        <script>
+            DM.init({
+                apiKey: '408218a64170fbdf1498',
+                status: true, // check login status
+                cookie: true // enable cookies to allow the server to access the session
+            });
+        </script>
+    </head>
+    <body>
+        <button id='login'>Login</button>
+        <script>
+            document.getElementById('login').onclick = function() {
+                DM.login(function(response) {
+                    if (response.session) {
+                        console.log("loged in", response.session);
+                    } else {
+                        console.log("not logged in");
+                    }
+                });
+            };
+        </script>
+        
+        <script>
+            window.fbAsyncInit = function() {
+                FB.init({
+                    appId      : '327688984675339',
+                    cookie     : true,
+                    xfbml      : true,
+                    version    : 'v3.2'
+                });
+                    
+                FB.AppEvents.logPageView();
+            };
+        
+            (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
+
+        <div id='player'></div>
+        <script>
+            var player = DM.player(document.getElementById('player'), {
+                video: 'xwr14q',
+                width: '100%',
+                height: '100%',
+                params: {
+                autoplay: false,
+                mute: true
+                }
+            });
+        </script>
+    </body>
+</html>
