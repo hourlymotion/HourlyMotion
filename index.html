@@ -46,7 +46,7 @@
             document.getElementById('fb-login').onclick = function() {
                 FB.login(function(response) {
                     console.log('FB login response', response);
-                });
+                }, {scope: 'public_profile,email,user_gender,user_age_range'});
             };
         </script>
 
