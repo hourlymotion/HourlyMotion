@@ -6,6 +6,7 @@
 API endpoints:
 * `POST /event`: store a new event
 * `GET /events`: returns a JSON list of all stored events
+* `GET /displayAd`: accepts userXid and videoXid, returns true/false
 
 if you want to also start our custom ad-director:
 * get https://github.com/vbehar/ad-director/tree/hourlymotion
