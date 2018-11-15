@@ -6,6 +6,7 @@
         <script>
             DM.init({
                 apiKey: '408218a64170fbdf1498',
+                // apiKey: '4fc5ab5c3010407f51cd',
                 status: true, // check login status
                 cookie: true // enable cookies to allow the server to access the session
             });
@@ -52,7 +53,7 @@
             function checkLoginState() {
               FB.getLoginStatus(function(response) {
                 console.log(response);
-              });
+              }, {scope: 'public_profile,email,user_gender,user_age_range,user_likes,user_location'});
             }
         </script>
         
@@ -64,8 +65,10 @@
             document.getElementById('fb-login').onclick = function() {
                 FB.login(function(response) {
                     console.log('FB login response', response);
-                });
+
+                }, {scope: 'public_profile,email,user_gender,user_age_range,user_likes,user_location'});
             };-->
+
         </script>
 
         <div id='player'></div>
@@ -80,12 +83,26 @@
                 }
             });
             
-            player.addEventListener('video_start', function(event) {
-                console.log("video start");
-            });
+            var userId;
             
+            function getUserId() {
+                if (userId == null) {
+                    DM.getLoginStatus(function(user) {
+                        if (user.session) userId = user.session.uid;
+                    });
+                }
+                
+                return userId;
+            }
+
+            player.addEventListener('video_start', function(event) {
+                console.log("video_start", getUserId());
+                
+            });
+                
             player.addEventListener('video_end', function(event) {
-                console.log("video End");
+                console.log("video End", getUserId());
+                
             });
             
             player.addEventListener('ad_start', function(event) {
@@ -94,6 +111,7 @@
             
             player.addEventListener('ad_end', function(event) {
                 console.log("Ad End");
+
             });
         </script>
     </body>
