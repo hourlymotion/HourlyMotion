@@ -1,23 +1,31 @@
 <html>
     <head>
         <script src="https://api.dmcdn.net/all.js"></script>
+        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
         <script>
             DM.init({
                 apiKey: '408218a64170fbdf1498',
                 status: true, // check login status
                 cookie: true // enable cookies to allow the server to access the session
             });
+            FB.init({
+                appId      : '327688984675339',
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v3.2'
+            });
+            // FB.AppEvents.logPageView(); needed ?
         </script>
     </head>
     <body>
-        <button id='login'>Login</button>
+        <button id='dm-login'>DM Login</button>
         <script>
             DM.getLoginStatus(function(response) {
                 if (response.session) {
                     console.log('already logged in', response.session);
-                    document.getElementById('login').remove();
+                    document.getElementById('dm-login').remove();
                 } else {
-                    document.getElementById('login').onclick = function() {
+                    document.getElementById('dm-login').onclick = function() {
                         DM.login(function(response) {
                             if (response.session) {
                                 console.log("logged in user", response.session);
@@ -30,25 +38,16 @@
             });
         </script>
         
+        <button id='fb-login'>FB Login</button>
         <script>
-            window.fbAsyncInit = function() {
-                FB.init({
-                    appId      : '327688984675339',
-                    cookie     : true,
-                    xfbml      : true,
-                    version    : 'v3.2'
+            FB.getLoginStatus(function(response) {
+                console.log('FB login status', response);
+            });
+            document.getElementById('fb-login').onclick = function() {
+                FB.login(function(response) {
+                    console.log('FB login response', response);
                 });
-                    
-                FB.AppEvents.logPageView();
             };
-        
-            (function(d, s, id){
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) {return;}
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-            }(document, 'script', 'facebook-jssdk'));
         </script>
 
         <div id='player'></div>
