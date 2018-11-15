@@ -94,9 +94,8 @@
                 
                 return userId;
             }
-
-            player.addEventListener('video_start', function(event) {
-                console.log("video_start", getUserId());
+            
+            function logEvent(event) {
                 fetch('/event', {
                     method: 'POST',
                     body: JSON.stringify({
@@ -111,19 +110,26 @@
                 ).then(
                     html => console.log(html)
                 );
+            }
+
+            player.addEventListener('video_start', function(event) {
+                console.log("video_start", getUserId());
+                logEvent(event);
             });
                 
             player.addEventListener('video_end', function(event) {
                 console.log("video End", getUserId());
-                
+                logEvent(event);
             });
             
             player.addEventListener('ad_start', function(event) {
                 console.log("Ad start");
+                logEvent(event);
             });
             
             player.addEventListener('ad_end', function(event) {
                 console.log("Ad End");
+                logEvent(event);
             });
         </script>
     </body>
