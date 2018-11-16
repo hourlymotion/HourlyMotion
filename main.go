@@ -269,6 +269,7 @@ type UserData struct {
 }
 
 type Settings struct {
+	AutoUseTokens string
 }
 
 type User struct {
