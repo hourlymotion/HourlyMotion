@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="hourlymotion.css">
+    </head>
+    <body>
+        <h1>Admin Dashboard</h1>
+        <table id='data'>
+            <tr>
+                <th>User</th>
+                <th># videos</th>
+                <th># ads</th>
+                <th># tokens</th>
+                <th># used tokens</th>
+            </tr>
+        </table>
+        <script>
+            fetch('/admin-data', {
+                method: 'GET'
+            }).then(
+                response => response.text()
+            ).then(
+                data => {
+                    data = JSON.parse(data);
+                    var table = document.getElementById('data');
+                    for (i in data) {
+                        var user = data[i];
+                        var row = table.insertRow(i+1);
+                        var userCell = row.insertCell(0);
+                        var videosCell = row.insertCell(1);
+                        var adsCell = row.insertCell(2);
+                        var tokensCell = row.insertCell(3);
+                        var usedTokensCell = row.insertCell(4);
+                        userCell.innerHTML = user.Xid;
+                        videosCell.innerHTML = user.Videos;
+                        adsCell.innerHTML = user.Ads;
+                        tokensCell.innerHTML = user.Tokens;
+                        usedTokensCell.innerHTML = user.UsedTokens;
+                    }
+                }
+            );
+        </script>
+    </body>
+</html>

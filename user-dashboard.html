@@ -1,0 +1,72 @@
+<html>
+    <head>
+        <script src="https://api.dmcdn.net/all.js"></script>
+        <script>
+            DM.init({
+                // apiKey: '408218a64170fbdf1498',
+                apiKey: '4fc5ab5c3010407f51cd',
+                status: true, // check login status
+                cookie: true // enable cookies to allow the server to access the session
+            });
+        </script>
+        <link rel="stylesheet" href="hourlymotion.css">
+    </head>
+    <body>
+        <h1>User Dashboard</h1>
+        <div id='no-user'>
+            <span>Please login first!</span>
+            <button id='dm-login'>Login</button>
+            <button id='dm-logout'>Logout</button>
+        </div>
+        <ul id='data'>
+            <li><strong># videos</strong>: <span id='videos'></span></li>
+            <li><strong># ads</strong>: <span id='ads'></span></li>
+            <li><strong># tokens</strong>: <span id='tokens'></span></li>
+            <li><strong># used tokens</strong>: <span id='usedTokens'></span></li>
+        </ul>
+        <script>
+                document.getElementById('dm-logout').onclick = function() {
+                    DM.logout(function(response) {
+                        console.log("user is now logged out", response);
+                        document.getElementById('dm-login').style.visibility = 'visible';
+                        document.getElementById('dm-logout').style.visibility = 'hidden';
+                    });
+                };
+                document.getElementById('dm-login').onclick = function() {
+                    DM.login(function(response) {
+                        if (response.session) {
+                            console.log("logged in user", response.session);
+                            document.getElementById('dm-login').style.visibility = 'hidden';
+                            document.getElementById('dm-logout').style.visibility = 'visible';
+                        } else {
+                            console.log("login cancelled");
+                        }
+                    });
+                };
+            DM.getLoginStatus(function(response) {
+                if (response.session) {
+                    console.log('already logged in', response.session);
+                    document.getElementById('no-user').style.visibility = 'hidden';
+                    document.getElementById('dm-login').style.visibility = 'hidden';
+                    var url = '/user-data?userXid=' + response.session.uid;
+                    fetch(url, {
+                        method: 'GET'
+                    }).then(
+                        response => response.text()
+                    ).then(
+                        data => {
+                            data = JSON.parse(data);
+                            document.getElementById('videos').innerHTML = data.Videos;
+                            document.getElementById('ads').innerHTML = data.Ads;
+                            document.getElementById('tokens').innerHTML = data.Tokens;
+                            document.getElementById('usedTokens').innerHTML = data.UsedTokens;
+                        }
+                    );
+                } else {
+                    document.getElementById('data').style.visibility = 'hidden';
+                    document.getElementById('dm-logout').style.visibility = 'hidden';
+                }
+            });
+        </script>
+    </body>
+</html>
