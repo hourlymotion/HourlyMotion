@@ -26,7 +26,7 @@
 }
 
 .row {
-    width: 400px;
+    width: 500px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -38,18 +38,19 @@
 .squares {
     border-style: solid;
     border-width: 5px;
-    border-color: cornflowerblue;
-    width: 100px;
-    background-color: cornflowerblue;
+    border-color: #00d2f3;
+    width: 180px;
+    background-color: #00d2f3;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 25px;
     display:inline-block;
+    margin-left: 25px;
 }
 
 .squareimg {
-    width: 50px;
-    height: 50px;
-    background-color: cornflowerblue;
+    width: 120px;
+    height: 100px;
+    background-color: #00d2f3;
 }
 
 .squarevalue {
@@ -59,7 +60,8 @@
     padding-bottom: 3px;
     font-size: 20px;
     font-weight: 800;
-    color: cornflowerblue;
+    color: #00d2f3;
+    height: 30px;
 }
 
 .squaredesc {
