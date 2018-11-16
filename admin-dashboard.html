@@ -3,16 +3,18 @@
         <link rel="stylesheet" href="hourlymotion.css">
     </head>
     <body>
-        <h1>Admin Dashboard</h1>
-        <table id='data'>
-            <tr>
-                <th>User</th>
-                <th># videos</th>
-                <th># ads</th>
-                <th># tokens</th>
-                <th># used tokens</th>
-            </tr>
-        </table>
+        <div id="userDashboardCenter">
+            <h1>Admin Dashboard</h1>
+            <table id='data'>
+                <tr>
+                    <th>User</th>
+                    <th>No. of Videos Watched</th>
+                    <th>No. of Ads Watched</th>
+                    <th>No. of Tokens Available</th>
+                    <th>No. of Tokens Redeemed</th>
+                </tr>
+            </table>
+        </div>
         <script>
             fetch('/admin-data', {
                 method: 'GET'
