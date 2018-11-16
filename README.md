@@ -3,10 +3,17 @@
 * `go run main.go` -> start an HTTP server on port `8080` by default
 * `ngrok http 8080` -> expose your local server to the outside world
 
+Application URLs:
+* `/index.html`: watch a video
+* `/admin-dashboard.html`: display all stored data
+* `/user-dashboard.html`: display stored data for the logged-in user
+
 API endpoints:
-* `POST /event`: store a new event
-* `GET /events`: returns a JSON list of all stored events
-* `GET /displayAd`: accepts userXid and videoXid, returns true/false
+* `POST /event`: store a new event - from a JSON payload
+* `GET /displayAd`: accepts `userXid` and `videoXid`, returns `true`/`false` if it should display an ad or not
+* `GET /admin-data`: returns a JSON array of all data stored for all users
+* `GET /user-data`: accepts `userXid` and return a JSON object of the data stored for the user
+* `POST /user-settings`: accepts `userXid` and a JSON payload of the user's settings to store
 
 if you want to also start our custom ad-director:
 * get https://github.com/vbehar/ad-director/tree/hourlymotion
