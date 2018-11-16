@@ -3,138 +3,162 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
-	"sync"
-  //  "math/rand"
-	"fmt"
-	"database/sql"
-	_ "github.com/lib/pq"
+	"os"
+
+	bolt "go.etcd.io/bbolt"
 )
 
 var (
-	addr       string
-	events     []Event
-	eventsLock sync.Mutex
-	postgre		*PostgreClient
+	addr   string
+	dbPath string
+	db     *bolt.DB
 )
-
-const UPDATE_VIDEO_WATCHED = "update dm_user set videos_watched = videos_watched + 1, tokens_to_redeem = tokens_to_redeem+1 where user_id = $1"
-const UPDATE_AD_WATCHED = "update dm_user set ads_watched = ads_watched + 1, tokens_to_redeem = tokens_to_redeem+1 where user_id = $1"
-const SELECT_REDEEM_COUNT = "select reduce_ads, tokens_to_redeem from dm_user where user_id = $1"
-const UPDATE_REDEEM_COUNT = "update dm_user set tokens_to_redeem = tokens_to_redeem - 4 where user_id = $1"
-
 
 func init() {
 	flag.StringVar(&addr, "addr", ":8080", "listen addr for the HTTP server")
-
-	postgre = NewPostgreClient()
+	flag.StringVar(&dbPath, "db-path", "hourlymotion.db", "path of the local database storage")
 
 	http.Handle("/", http.FileServer(http.Dir("")))
 	http.HandleFunc("/event", storeEvent)
-	http.HandleFunc("/events", listEvents)
-    http.HandleFunc("/displayAd", displayAd)
+	http.HandleFunc("/displayAd", displayAd)
 }
 
 func main() {
 	flag.Parse()
+
+	log.Printf("Opening database at %s\n", dbPath)
+	var err error
+	db, err = bolt.Open(dbPath, 0600, nil)
+	checkErr(err)
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(k("hourlymotion"))
+		return err
+	})
+	checkErr(err)
 
 	log.Printf("Starting server on %s\n", addr)
 	log.Println(http.ListenAndServe(addr, nil))
 }
 
 func storeEvent(w http.ResponseWriter, r *http.Request) {
-	var event Event
-	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+	var (
+		event Event
+		err   error
+	)
+	if err = json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if (event.Type == "video_end") || (event.Type == "ad_end") && (event.User.DailymotionID != "")  {
-		db := postgre.getDbConnection()
-		defer db.Close()
-
-		query := UPDATE_VIDEO_WATCHED
-
-		if event.Type == "ad_end" {
-			query = UPDATE_AD_WATCHED
-		}
-
-		db.QueryRow(query, event.User.DailymotionID)
-
+	// not logged-in user
+	if len(event.User.DailymotionID) == 0 {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-
-	/* eventsLock.Lock()
-	events = append(events, event)
-	eventsLock.Unlock() */
-
-
-}
-
-func listEvents(w http.ResponseWriter, r *http.Request) {
-	eventsLock.Lock()
-	defer eventsLock.Unlock()
-
-	if err := json.NewEncoder(w).Encode(&events); err != nil {
+	err = db.Update(func(tx *bolt.Tx) error {
+		var userData UserData
+		bucket := tx.Bucket(k("hourlymotion"))
+		data := bucket.Get(k(event.User.DailymotionID))
+		if data == nil {
+			userData = UserData{
+				Xid: event.User.DailymotionID,
+			}
+		} else {
+			if err := json.Unmarshal(data, &userData); err != nil {
+				return err
+			}
+		}
+		switch event.Type {
+		case "ad_start":
+			userData.Ads++
+			userData.Tokens++
+		case "video_start":
+			userData.Videos++
+		}
+		log.Printf("Storing/Updating event %s with user data %#v", event.Type, userData)
+		data, err := json.Marshal(userData)
+		if err != nil {
+			return err
+		}
+		return bucket.Put(k(event.User.DailymotionID), data)
+	})
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func displayAd(w http.ResponseWriter, r *http.Request) {
-    userXids, ok := r.URL.Query()["userXid"]
-    
-    if !ok || len(userXids[0]) < 1 {
-        log.Println("Url Param 'userXid' is missing")
-        return
-    }
-
-    userXid := userXids[0]
-
-    log.Println("UserXid ", userXid);
-    
-    videoXids, ok := r.URL.Query()["videoXid"]
-    
-    if !ok || len(videoXids[0]) < 1 {
-        log.Println("Url Param 'videoXids' is missing")
-        return
-    }
-    
-    videoXid := videoXids[0]
-
-	log.Println("videoXid ", videoXid);
-
-	db := postgre.getDbConnection()
-	defer db.Close()
-
-	rows, err := db.Query(SELECT_REDEEM_COUNT, userXid)
-	checkErr(err)
-
-	for rows.Next() {
-		var reduce_ads bool
-		var tokens_to_redeem int
-		err = rows.Scan(&reduce_ads, &tokens_to_redeem)
-		checkErr(err)
-		if (reduce_ads == true) && (tokens_to_redeem > 4) {
-			db.QueryRow(UPDATE_REDEEM_COUNT, userXid)
-			fmt.Fprintf(w, "true")
-		} else {
-			fmt.Fprintf(w, "false")
-		}
+	userXid := r.URL.Query().Get("userXid")
+	if len(userXid) == 0 {
+		http.Error(w, "missing userXid query parameter", http.StatusBadRequest)
+		return
+	}
+	videoXid := r.URL.Query().Get("videoXid")
+	if len(videoXid) == 0 {
+		http.Error(w, "missing videoXid query parameter", http.StatusBadRequest)
+		return
 	}
 
-	w.WriteHeader(http.StatusOK);
+	displayAd, err := shouldDisplayAd(userXid)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    /* randomNum := rand.Intn(10)
-    
-    if randomNum >= 8 {
-        fmt.Fprintf(w, "false")
-    } else {
-        fmt.Fprintf(w, "true")
-    } */
+	fmt.Fprintf(w, "%t", displayAd)
+}
 
+func shouldDisplayAd(userXid string) (bool, error) {
+	var displayAd bool
+	err := db.Update(func(tx *bolt.Tx) error {
+		var userData UserData
+		bucket := tx.Bucket(k("hourlymotion"))
+		data := bucket.Get(k(userXid))
+		if data == nil {
+			userData = UserData{
+				Xid: userXid,
+			}
+		} else {
+			if err := json.Unmarshal(data, &userData); err != nil {
+				return err
+			}
+		}
+
+		if userData.Tokens > 0 {
+			displayAd = false
+		} else {
+			displayAd = true
+		}
+
+		if !displayAd {
+			log.Printf("will NOT display an ad for user %#v", userData)
+			userData.Tokens--
+		}
+
+		log.Printf("(maybe) updated user data %#v", userData)
+		data, err := json.Marshal(userData)
+		if err != nil {
+			return err
+		}
+		return bucket.Put(k(userXid), data)
+	})
+	return displayAd, err
+}
+
+type UserData struct {
+	Xid    string
+	Ads    int64
+	Videos int64
+	Tokens int64
 }
 
 type User struct {
@@ -147,25 +171,19 @@ type Event struct {
 	VideoID string `json:"video_id"`
 }
 
-type PostgreClient struct {
-
-}
-
-func NewPostgreClient() *PostgreClient {
-	return &PostgreClient{}
-}
-
-
-func (pc *PostgreClient) getDbConnection() *sql.DB  {
-	dbinfo := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		"hourlymotion.cgwqhqmxi2gt.us-east-1.rds.amazonaws.com", "hourlyadmin", "DMhackathon2018", "hourlymotiondb")
-	db, err := sql.Open("postgres", dbinfo)
-	checkErr(err)
-	return db
-}
-
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func getenvOrDefault(name, defaultValue string) string {
+	if value := os.Getenv(name); len(value) > 0 {
+		return value
+	}
+	return defaultValue
+}
+
+func k(str string) []byte {
+	return []byte(str)
 }

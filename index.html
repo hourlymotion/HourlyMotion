@@ -5,8 +5,8 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script>
             DM.init({
-                apiKey: '408218a64170fbdf1498',
-                // apiKey: '4fc5ab5c3010407f51cd',
+                // apiKey: '408218a64170fbdf1498',
+                apiKey: '4fc5ab5c3010407f51cd',
                 status: true, // check login status
                 cookie: true // enable cookies to allow the server to access the session
             });
@@ -74,7 +74,7 @@
         <div id='player'></div>
         <script>
             var player = DM.player(document.getElementById('player'), {
-                video: 'xwr14q',
+                video: 'xwr14q', //x6wswiy',
                 width: '90%',
                 height: '90%',
                 params: {
@@ -96,7 +96,7 @@
             }
             
             function logEvent(event) {
-                fetch('https://hourlymotionapp.ngrok.io/event', {
+                fetch('/event', {
                     method: 'POST',
                     body: JSON.stringify({
                         user: {
