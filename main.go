@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -136,7 +137,8 @@ func shouldDisplayAd(userXid string) (bool, error) {
 			}
 		}
 
-		if userData.Tokens > 0 {
+		autoUseTokens, _ := strconv.ParseBool(userData.Settings.AutoUseTokens)
+		if userData.Tokens > 0 && autoUseTokens {
 			displayAd = false
 		} else {
 			displayAd = true
