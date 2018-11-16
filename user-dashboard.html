@@ -12,18 +12,49 @@
         <link rel="stylesheet" href="hourlymotion.css">
     </head>
     <body>
-        <h1>User Dashboard</h1>
-        <div id='no-user'>
-            <span>Please login first!</span>
-            <button id='dm-login'>Login</button>
-            <button id='dm-logout'>Logout</button>
+        <div id="userDashboardCenter">
+            <h1>Dailymotion</h1>
+            <h2>User Dashboard</h2>
+            <div id='no-user'>
+                <span>Login to see fewer ads and to redeem rewards!</span>
+                <button id='dm-login'>Login</button>
+                <button id='dm-logout'>Logout</button>
+            </div>
+            <div class="row">
+                <div class="squares">
+                    <img class="squareimg" src="images/videos%20watched.svg"/>
+                    <span class="squaredesc">No. of Videos Watched</span>
+                    <div id='videos' class="squarevalue"></div>
+                </div>
+                <div class="squares">
+                    <img class="squareimg" src="images/ads%20watched.svg"/>
+                    <span class="squaredesc">No. of Ads Watched</span>
+                    <div id='ads' class="squarevalue"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="squares">
+                    <img class="squareimg" src="images/ads%20skipped.svg"/>
+                    <span class="squaredesc">No. of Skipped Ads</span>
+                    <div id='usedTokens' class="squarevalue"></div>
+                </div>
+                <div class="squares">
+                    <img class="squareimg" src="images/redeem%20rewards.svg"/>
+                    <span class="squaredesc">Reedemable Perks</span>
+                    <div id='tokens' class="squarevalue"></div>
+                </div>
+            </div>
+            <!--<div class="squaresLeft">Videos</div>
+            <div class="squares">Ads</div>
+            <div class="squaresLeft">Tokens</div>
+            <div class="squares">Used Tokens</div>
+            <ul id='data'>
+                <li><strong># videos</strong>: <span id='videos1'></span></li>
+                <li><strong># ads</strong>: <span id='ads'></span></li>
+                <li><strong># tokens</strong>: <span id='tokens'></span></li>
+                <li><strong># used tokens</strong>: <span id='usedTokens'></span></li>
+            </ul>-->
         </div>
-        <ul id='data'>
-            <li><strong># videos</strong>: <span id='videos'></span></li>
-            <li><strong># ads</strong>: <span id='ads'></span></li>
-            <li><strong># tokens</strong>: <span id='tokens'></span></li>
-            <li><strong># used tokens</strong>: <span id='usedTokens'></span></li>
-        </ul>
         <script>
                 document.getElementById('dm-logout').onclick = function() {
                     DM.logout(function(response) {
@@ -68,5 +99,6 @@
                 }
             });
         </script>
+
     </body>
 </html>
