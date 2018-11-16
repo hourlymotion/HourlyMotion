@@ -1,7 +1,6 @@
 <html>
     <head>
         <script src="https://api.dmcdn.net/all.js"></script>
-        <script src="https://connect.facebook.net/en_US/sdk.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script>
             DM.init({
@@ -10,71 +9,45 @@
                 status: true, // check login status
                 cookie: true // enable cookies to allow the server to access the session
             });
-            FB.init({
-                appId      : '327688984675339',
-                cookie     : true,
-                xfbml      : true,
-                version    : 'v3.2'
-            });
-            // FB.AppEvents.logPageView(); needed ?
-            
-            $(document).ready(function(){
-
-            });
-            
         </script>
         <link rel="stylesheet" href="hourlymotion.css">
     </head>
     <body>
-        <button id='dm-login'>DM Login</button>
+        <button id='dm-login'>Login</button>
+        <button id='dm-logout'>Logout</button>
         <script>
+            document.getElementById('dm-logout').onclick = function() {
+                DM.logout(function(response) {
+                    console.log("user is now logged out", response);
+                    document.getElementById('dm-login').style.visibility = 'visible';
+                    document.getElementById('dm-logout').style.visibility = 'hidden';
+                });
+            };
+            document.getElementById('dm-login').onclick = function() {
+                DM.login(function(response) {
+                    if (response.session) {
+                        console.log("logged in user", response.session);
+                        document.getElementById('dm-login').style.visibility = 'hidden';
+                        document.getElementById('dm-logout').style.visibility = 'visible';
+                    } else {
+                        console.log("login cancelled");
+                    }
+                });
+            };
             DM.getLoginStatus(function(response) {
                 if (response.session) {
                     console.log('already logged in', response.session);
-                    document.getElementById('dm-login').remove();
+                    document.getElementById('dm-login').style.visibility = 'hidden';
                 } else {
-                    document.getElementById('dm-login').onclick = function() {
-                        DM.login(function(response) {
-                            if (response.session) {
-                                console.log("logged in user", response.session);
-                            } else {
-                                console.log("login cancelled");
-                            }
-                        });
-                    };
+                    document.getElementById('dm-logout').style.visibility = 'hidden';
                 }
             });
-        </script>
-        <fb:login-button 
-          scope="public_profile,email"
-          onlogin="checkLoginState();">
-        </fb:login-button>
-        <script>
-            function checkLoginState() {
-              FB.getLoginStatus(function(response) {
-                console.log(response);
-              }, {scope: 'public_profile,email,user_gender,user_age_range,user_likes,user_location'});
-            }
-        </script>
-        
-        <!-- <button id='fb-login'>FB Login</button>
-        <script>
-            FB.getLoginStatus(function(response) {
-                console.log('FB login status', response);
-            });
-            document.getElementById('fb-login').onclick = function() {
-                FB.login(function(response) {
-                    console.log('FB login response', response);
-
-                }, {scope: 'public_profile,email,user_gender,user_age_range,user_likes,user_location'});
-            };-->
-
         </script>
 
         <div id='player'></div>
         <script>
             var player = DM.player(document.getElementById('player'), {
-                video: 'xwr14q', //x6wswiy',
+                video: 'x6wswiy',
                 width: '90%',
                 height: '90%',
                 params: {
